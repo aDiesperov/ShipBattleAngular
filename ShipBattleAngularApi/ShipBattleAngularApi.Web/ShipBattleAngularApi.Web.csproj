@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ShipBattleAngularApi.BusinessLogic\ShipBattleAngularApi.BusinessLogic.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="EncryptionAttributes">
+      <HintPath>..\..\..\ShipBattleGame\EncryptionAttributes.dll</HintPath>
+    </Reference>
+    <Reference Include="ShipBattleApi.Models">
+      <HintPath>..\..\..\ShipBattleGame\ShipBattleApi.Models.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
