@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using ShipBattleAngularApi.BusinessLogic.Services.Interfaces;
+using ShipBattleAngularApi.Web.Enums;
 using ShipBattleAngularApi.Web.Extensions;
 using ShipBattleAngularApi.Web.Hubs.Interfaces;
 using ShipBattleAngularApi.Web.Mappers;
@@ -7,6 +8,7 @@ using ShipBattleAngularApi.Web.Models;
 using ShipBattleApi.Models.Enums;
 using ShipBattleApi.Models.Models;
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace ShipBattleAngularApi.Web.Hubs
@@ -20,7 +22,7 @@ namespace ShipBattleAngularApi.Web.Hubs
         private readonly IGameService _gameService;
         private readonly IInfoGameService _infoGameService;
         private readonly IHttpClientService _httpClientService;
-        private readonly string _nameAssemblyModel = "ShipBattleMVC.Web";
+        private readonly string _nameAssemblyModel = "ShipBattleAngularApi.Web";
 
         public HubSR(IInfoGameService infoGameService, IHttpClientService httpClientService, IGameService gameService)
         {
@@ -31,7 +33,7 @@ namespace ShipBattleAngularApi.Web.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            string user = Context.GetHttpContext().Request.Query["login"];
+            string user = Context.GetHttpContext().Request.Query["access_token"];
             if (!String.IsNullOrEmpty(user))
             {
                 string pathBase = Context.GetHttpContext().Request.Host.Value;
@@ -91,31 +93,31 @@ namespace ShipBattleAngularApi.Web.Hubs
             string user = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
             if (!String.IsNullOrEmpty(user) && _infoGameService[user].State == StateReadyGame.Prepare)
             {
-                if (nameof(MilitaryShipModel).StartsWith(shipInfo.TypeShip, StringComparison.CurrentCultureIgnoreCase))
+                if (shipInfo.TypeShip == TypeShips.Military)
                 {
-                    if (shipInfo.act2 != 0) return false;
+                    if (shipInfo.Act2 != 0) return false;
 
-                    MilitaryShipModel ship = new MilitaryShipModel(shipInfo.len, shipInfo.speed, shipInfo.r_act, shipInfo.act1);
+                    MilitaryShipModel ship = new MilitaryShipModel(shipInfo.Len, shipInfo.Speed, shipInfo.R_act, shipInfo.Act1);
 
-                    if (_infoGameService[user].GameField.AddShip(ship, shipInfo.x, shipInfo.y, shipInfo.dir))
+                    if (_infoGameService[user].GameField.AddShip(ship, shipInfo.X, shipInfo.Y, shipInfo.Dir))
                         return true;
 
                 }
-                else if (nameof(SupportShipModel).StartsWith(shipInfo.TypeShip, StringComparison.CurrentCultureIgnoreCase))
+                else if (shipInfo.TypeShip == TypeShips.Support)
                 {
-                    if (shipInfo.act2 != 0) return false;
+                    if (shipInfo.Act2 != 0) return false;
 
-                    SupportShipModel ship = new SupportShipModel(shipInfo.len, shipInfo.speed, shipInfo.r_act, shipInfo.act1);
+                    SupportShipModel ship = new SupportShipModel(shipInfo.Len, shipInfo.Speed, shipInfo.R_act, shipInfo.Act1);
 
-                    if (_infoGameService[user].GameField.AddShip(ship, shipInfo.x, shipInfo.y, shipInfo.dir))
+                    if (_infoGameService[user].GameField.AddShip(ship, shipInfo.X, shipInfo.Y, shipInfo.Dir))
                         return true;
 
                 }
-                else if (nameof(HybridShipModel).StartsWith(shipInfo.TypeShip, StringComparison.CurrentCultureIgnoreCase))
+                else if (shipInfo.TypeShip == TypeShips.Hybrid)
                 {
-                    HybridShipModel ship = new HybridShipModel(shipInfo.len, shipInfo.speed, shipInfo.r_act, shipInfo.act1, shipInfo.act2);
+                    HybridShipModel ship = new HybridShipModel(shipInfo.Len, shipInfo.Speed, shipInfo.R_act, shipInfo.Act1, shipInfo.Act2);
 
-                    if (_infoGameService[user].GameField.AddShip(ship, shipInfo.x, shipInfo.y, shipInfo.dir))
+                    if (_infoGameService[user].GameField.AddShip(ship, shipInfo.X, shipInfo.Y, shipInfo.Dir))
                         return true;
                 }
             }
