@@ -2,7 +2,7 @@
 {
     public class InfoHit
     {
-        public int IdShoted { get; set; }
+        public int NumShoted { get; set; }
         public double DamageShoted { get; set; }
         public bool DiedShip { get; set; }
     }

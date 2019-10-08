@@ -1,0 +1,1 @@
+export enum TypeShips{ Military, Support, Hybrid }

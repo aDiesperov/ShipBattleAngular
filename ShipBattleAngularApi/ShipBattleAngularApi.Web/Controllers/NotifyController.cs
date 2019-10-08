@@ -119,7 +119,7 @@ namespace ShipBattleAngularApi.Web.Controllers
             var userInfo = _infoGameService[user];
             if (userInfo != null)
             {
-                _gameService.HitShip(user, infoHit.IdShoted, infoHit.DamageShoted, infoHit.DiedShip);
+                _gameService.HitShip(user, infoHit.NumShoted, infoHit.DamageShoted, infoHit.DiedShip);
 
                 string msg;
                 if (infoHit.DiedShip)  msg = _messageDiedShip;
@@ -127,7 +127,21 @@ namespace ShipBattleAngularApi.Web.Controllers
 
                 string conId = _infoGameService.GetConnectionId(user);
 
-                await _hubContext.Clients.Client(conId).ReceiveMessage(msg, false);
+                await _hubContext.Clients.Client(conId).Hit(msg, infoHit.NumShoted, infoHit.DamageShoted, infoHit.DiedShip);
+            }
+        }
+
+        [HttpPost("fixShip/{user}")]
+        public async Task FixShipAsync([FromRoute]string user, [FromBody]InfoFix infoFix)
+        {
+            var userInfo = _infoGameService[user];
+            if (userInfo != null)
+            {
+                _gameService.FixShip(user, infoFix.NumShip, infoFix.Broken);
+
+                string conId = _infoGameService.GetConnectionId(user);
+
+                await _hubContext.Clients.Client(conId).Fix(infoFix.NumShip, infoFix.Broken);
             }
         }
     }

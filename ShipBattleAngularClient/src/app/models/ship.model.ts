@@ -10,10 +10,8 @@ export class ShipModel {
   R_act: number;
   Act1: number;
   Act2: number;
+  Broken: number;
 
-  /**
-   *
-   */
   constructor(
     typeShip: TypeShips,
     x: number,
@@ -34,5 +32,6 @@ export class ShipModel {
     this.R_act = r_act;
     this.Act1 = act1;
     this.Act2 = isNaN(act2) ? 0 : act2;
+    this.Broken = 0;
   }
 }

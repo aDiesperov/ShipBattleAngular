@@ -3,24 +3,49 @@ import { SignalRService } from "../shared/signal-r.service";
 import { GameService } from "../shared/game.service";
 import { ShipModel } from "../models/ship.model";
 import { InfoAct } from "../models/infoAct.model";
+import { CanvasGameField } from 'src/assets/graphic-framework/CanvasGameField';
 
 @Component({
   selector: "app-game",
   templateUrl: "./game.component.html",
   styleUrls: ["./game.component.css"]
 })
-export class GameComponent {
+export class GameComponent implements OnInit {
+  _canvasCtx: CanvasRenderingContext2D;
+  _widthCanvas: number;
+  _heightCanvas: number;
+
+  ngOnInit(): void {
+    let canvasEl = document.getElementById("myCanvas") as HTMLCanvasElement;
+    this._canvasCtx = canvasEl.getContext("2d");
+    this._widthCanvas = canvasEl.width;
+    this._heightCanvas = canvasEl.height;
+  }
+
   constructor(
     private signalRService: SignalRService,
     private gameService: GameService
   ) {
     this.signalRService.connection.on("ReceiveMessage", this.receiveMessage.bind(this));
     this.signalRService.connection.on("PrepareGame", this.prepareGame.bind(this));
+    this.signalRService.connection.on("Hit", this.hit.bind(this));
+    this.signalRService.connection.on("Fix", this.fixed.bind(this));
   }
 
-  inputText = '';
+  inputText = "";
   inputCmd = "";
   disabledCmd = false;
+
+  fixed(num: number, broken: number){
+    this.gameService.fixed(num, broken);
+    this.drawShips();
+  }
+
+  hit(msg: string, num: number, damage: number, died: boolean){
+    this.writeLine(msg);
+    this.gameService.hit(num, damage, died);
+    this.drawShips();
+  }
 
   receiveMessage(msg: string, error: boolean) {
     if (error) {
@@ -43,13 +68,7 @@ export class GameComponent {
     this.inputText += text;
   }
 
-  start(cmd: string) {
-    this.gameService.start(cmd).then(res => {
-      if (res) this.writeLine("Offer sent!");
-    });
-  }
-
-  OnSubmit() {
+  public OnSubmit() {
     if (this.inputCmd.length > 0) {
       let cmd = this.inputCmd;
       this.inputCmd = "";
@@ -71,14 +90,20 @@ export class GameComponent {
     }
   }
 
-  fix(cmd: string) {
+  private start(cmd: string) {
+    this.gameService.start(cmd).then(res => {
+      if (res) this.writeLine("Offer sent!");
+    });
+  }
+
+  private fix(cmd: string) {
     this.gameService.fix(cmd).then((res: InfoAct | null) => {
       if (res !== null) this.writeLine(`Ship ${res.Num} fixed ship!`);
       else this.writeLine("Error!");
     });
   }
 
-  shot(cmd: string) {
+  private shot(cmd: string) {
     this.gameService.shot(cmd).then((res: number) => {
       if (res == 2) this.writeLine(`Ship killed another ship!`);
       else if (res == 1) this.writeLine(`Ship hitted another ship!`);
@@ -86,15 +111,16 @@ export class GameComponent {
     });
   }
 
-  move(cmd: string) {
+  private move(cmd: string) {
     this.gameService.move(cmd).then((res: InfoAct | null) => {
-      if (res !== null)
+      if (res !== null) {
         this.writeLine(`Ship ${res.Num} moved on  (${res.X}:${res.Y})`);
-      else this.writeLine("Error!");
+        this.drawShips();
+      } else this.writeLine("Error!");
     });
   }
 
-  ready() {
+  private ready() {
     this.writeLine("Waitting...");
     this.gameService.ready().then(res => {
       if (res) this.writeLine("You are ready!");
@@ -102,13 +128,18 @@ export class GameComponent {
     });
   }
 
-  addship(cmd: string) {
+  private addship(cmd: string) {
     this.gameService.addship(cmd).then((res: ShipModel | null) => {
-      if (res !== null)
-        this.writeLine(
-          `Added new ship ${res.TypeShip} (${res.X}:${res.Y}:${res.Len})`
-        );
-      else this.writeLine("Error!");
+      if (res !== null) {
+        this.writeLine(`Added new ship ${res.TypeShip} (${res.X}:${res.Y}:${res.Len})`);
+        this.drawShips();
+      } else this.writeLine("Error!");
     });
+  }
+
+  drawShips() {
+    let canvasGameField = new CanvasGameField();
+    this.gameService.ships.forEach(ship => canvasGameField.AddShip(ship.TypeShip, ship.X, ship.Y, ship.Dir, ship.Len, ship.Broken))
+    canvasGameField.Draw(this._canvasCtx, this._widthCanvas, this._heightCanvas);
   }
 }

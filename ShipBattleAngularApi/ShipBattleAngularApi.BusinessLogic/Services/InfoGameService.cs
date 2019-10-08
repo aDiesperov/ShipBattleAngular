@@ -75,21 +75,6 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
             return null;
         }
 
-        public ShipModel GetShipById(string user, int id)
-        {
-            if (Exists(user))
-            {
-                foreach(var coor in _userInfoGame[user].GameField.Coors)
-                {
-                    if(coor.Ship.Id == id)
-                    {
-                        return coor.Ship;
-                    }
-                }
-            }
-            return null;
-        }
-
         public GameFieldModel GetField(string user)
         {
             if (Exists(user))

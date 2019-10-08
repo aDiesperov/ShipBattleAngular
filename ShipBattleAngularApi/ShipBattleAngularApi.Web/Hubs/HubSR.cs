@@ -8,7 +8,6 @@ using ShipBattleAngularApi.Web.Models;
 using ShipBattleApi.Models.Enums;
 using ShipBattleApi.Models.Models;
 using System;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace ShipBattleAngularApi.Web.Hubs

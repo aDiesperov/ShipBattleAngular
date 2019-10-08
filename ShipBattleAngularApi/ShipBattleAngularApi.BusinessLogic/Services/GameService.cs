@@ -13,12 +13,22 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
             _infoGameService = infoGameService;
         }
 
-        public void HitShip(string user, int id, double damage, bool died)
+        public void FixShip(string user, int numShip, int broken)
         {
             var userInfo = _infoGameService[user];
             if (userInfo != null)
             {
-                ShipModel ship = _infoGameService.GetShipById(user, id);
+                ShipModel ship = userInfo.GameField.Coors[numShip].Ship;
+                if (ship != null) ship.Broken = broken;
+            }
+        }
+
+        public void HitShip(string user, int numShoted, double damage, bool died)
+        {
+            var userInfo = _infoGameService[user];
+            if (userInfo != null)
+            {
+                ShipModel ship = userInfo.GameField.Coors[numShoted].Ship;
                 if (ship != null)
                 {
                     ship.Broken += damage;

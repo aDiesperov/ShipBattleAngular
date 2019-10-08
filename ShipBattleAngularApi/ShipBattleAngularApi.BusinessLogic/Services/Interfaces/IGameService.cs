@@ -9,5 +9,6 @@ namespace ShipBattleAngularApi.BusinessLogic.Services.Interfaces
         void ResetGame(string user);
         void HitShip(string user, int id, double damage, bool died);
         bool Move(string user, int num, int x, int y);
+        void FixShip(string user, int numShip, int broken);
     }
 }

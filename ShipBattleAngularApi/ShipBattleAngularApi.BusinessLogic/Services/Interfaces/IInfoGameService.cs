@@ -15,7 +15,6 @@ namespace ShipBattleAngularApi.BusinessLogic.Services.Interfaces
         bool ShipsExist(string user);
         IEnumerable<CoorModel> GetCoors(string user);
         string GetConnectionId(string user);
-        ShipModel GetShipById(string user, int id);
         GameFieldModel GetField(string user);
 
 

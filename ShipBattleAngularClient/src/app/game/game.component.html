@@ -1,6 +1,10 @@
 <h1>Game</h1>
 
-<form (submit)="OnSubmit()" class="row">
-    <textarea rows="15" class="form-control rounded-0 border-dark" readonly>{{inputText}}</textarea>
-    <input [disabled]="disabledCmd" name="inputCmd" [(ngModel)]="inputCmd" class="form-control rounded-0" type="text" placeholder="Enter command" />
+<form (submit)="OnSubmit()">
+    <div class="d-flex">
+        <canvas id="myCanvas" width="375" height="375"></canvas>
+        <textarea rows="15" class="col form-control rounded-0 border-dark" readonly>{{inputText}}</textarea>
+    </div>
+    <input [disabled]="disabledCmd" name="inputCmd" [(ngModel)]="inputCmd" class="form-control rounded-0" type="text"
+        placeholder="Enter command" />
 </form>
