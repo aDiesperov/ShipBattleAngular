@@ -20,7 +20,7 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
             if (ship != null) ship.Broken = broken;
         }
 
-        public void HitShip(InfoGame userInfo, int numShoted, double damage, bool died)
+        public void HitShip(InfoGame userInfo, int numShoted, int damage, bool died)
         {
             if (userInfo != null)
             {

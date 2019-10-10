@@ -37,13 +37,13 @@ namespace ShipBattleAngularApi.Web.Models
             switch (type.Name)
             {
                 case nameof(MilitaryShipViewModel):
-                    shipModel = new MilitaryShipModel(Id, Length, Speed, RadiusAction, Direction, ((MilitaryShipViewModel)this).Damage);
+                    shipModel = new MilitaryShipModel(Id, Length, Speed, RadiusAction, Direction, ((MilitaryShipViewModel)this).Damage, 0);
                     break;
                 case nameof(SupportShipViewModel):
-                    shipModel = new SupportShipModel(Id, Length, Speed, RadiusAction, Direction, ((SupportShipViewModel)this).Health);
+                    shipModel = new SupportShipModel(Id, Length, Speed, RadiusAction, Direction, ((SupportShipViewModel)this).Health, 0);
                     break;
                 case nameof(HybridShipViewModel):
-                    shipModel = new HybridShipModel(Id, Length, Speed, RadiusAction, Direction, ((HybridShipViewModel)this).Damage, ((HybridShipViewModel)this).Health);
+                    shipModel = new HybridShipModel(Id, Length, Speed, RadiusAction, Direction, ((HybridShipViewModel)this).Damage, ((HybridShipViewModel)this).Health, 0);
                     break;
             }
 

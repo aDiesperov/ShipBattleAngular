@@ -9,7 +9,7 @@ namespace ShipBattleAngularApi.BusinessLogic.Services.Interfaces
         Task<bool> Start(string user, string enemy);
         Task Left(string user);
         Task<string> AddShip(string user, string infoShip);
-        Task<bool> Ready(string user);
+        Task<int> Ready(string user);
         Task<bool> Move(string user, int num, int x, int y);
         Task<StateShot> Shot(string user, int num, int x, int y);
         Task<bool> Fix(string user, int num, int x, int y);

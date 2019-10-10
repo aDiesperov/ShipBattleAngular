@@ -64,11 +64,19 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
             await _httpClient.SendAsync(httpRequest);
         }
 
-        public async Task<bool> Ready(string user)
+        public async Task<int> Ready(string user)
         {
             string url = createUrl(_opt.AddressApi, _clientController, _clientMethodReady, user);
 
-            return await handlerResponseBool(await _httpClient.GetAsync(url));
+            var httpResponse = await _httpClient.GetAsync(url);
+
+            if (httpResponse.IsSuccessStatusCode)
+            {
+                var res = await httpResponse.Content.ReadAsStringAsync();
+                return Convert.ToInt32(res);
+
+            }
+            return 0;
         }
 
         public async Task<bool> Start(string user, string enemy)

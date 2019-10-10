@@ -7,7 +7,7 @@ namespace ShipBattleAngularApi.BusinessLogic.Services.Interfaces
     {
         void PrepareGame(InfoGame user, GameFieldModel gameFieldModel, bool myQueue);
         void ResetGame(InfoGame user);
-        void HitShip(InfoGame user, int id, double damage, bool died);
+        void HitShip(InfoGame user, int numShoted, int damage, bool died);
         void Move(InfoGame user, int num, int x, int y);
         void FixShip(InfoGame user, int numShip, int broken);
     }

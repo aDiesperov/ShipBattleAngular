@@ -110,7 +110,7 @@ namespace ShipBattleAngularApi.Web.Hubs
                         break;
                     case TypeShips.Hybrid:
                         ship = new HybridShipModel(shipInfo.Len, shipInfo.Speed, shipInfo.R_act, shipInfo.Act1, shipInfo.Act2);
-                        
+
                         if (userInfo.GameField.AddShip(ship, shipInfo.X, shipInfo.Y, shipInfo.Dir)) return true;
                         break;
                 }
@@ -118,7 +118,7 @@ namespace ShipBattleAngularApi.Web.Hubs
             return false;
         }
 
-        public async Task<bool> Ready()
+        public async Task<int> Ready()
         {
             var userInfo = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
             if (userInfo != null && userInfo.State == StateReadyGame.Prepare && _infoGameService.ShipsExist(userInfo))
@@ -132,21 +132,20 @@ namespace ShipBattleAngularApi.Web.Hubs
 
                     infoShip = await _httpClientService.AddShip(user, infoShip);
 
-                    if (infoShip == null) return false;
+                    if (infoShip == null) return 0;
                     coorViewModel = Serializer.Deserialize<CoorViewModel>(infoShip, _nameAssemblyModel);
 
                     coor.Id = coorViewModel.Id;
                     coor.Ship.Id = coorViewModel.Ship.Id;
+                }
 
-                }
-                if (await _httpClientService.Ready(user))
-                {
-                    if (userInfo.State < StateReadyGame.Ready)
-                        userInfo.State = StateReadyGame.Ready;
-                    return true;
-                }
+                int res = await _httpClientService.Ready(user);
+                if (res == 1)
+                    userInfo.State = StateReadyGame.Ready;
+
+                return res;
             }
-            return false;
+            return 0;
         }
 
         public async Task<bool> NextStep()

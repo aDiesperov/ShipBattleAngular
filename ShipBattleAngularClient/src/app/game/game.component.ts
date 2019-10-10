@@ -38,7 +38,7 @@ export class GameComponent implements OnInit, OnDestroy {
     this.signalRService.Connection.on("Offer", this.offer.bind(this));
     this.signalRService.Connection.on("NextStep", this.myNextStep.bind(this));
 
-    this.signalRService.Start().then(() => console.log('connected!'));
+    this.signalRService.Start().then(() => console.log('Connected!'));
   }
 
   inputText = "";
@@ -64,6 +64,8 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   prepareGame(id: number, enemy: string) {
+    this.gameService.ships = [];
+    this.drawShips();
     this.writeLine(
       `You are playing with ${enemy}. GameFieldId is ${id}. Add ships on your field!`
     );
@@ -124,7 +126,8 @@ export class GameComponent implements OnInit, OnDestroy {
 
   private shot(cmd: string) {
     this.gameService.shot(cmd).then((res: number) => {
-      if (res == 2) this.writeLine(`Ship killed another ship!`);
+      if (res === 3) {}
+      else if (res == 2) this.writeLine(`Ship killed another ship!`);
       else if (res == 1) this.writeLine(`Ship hitted another ship!`);
       else this.writeLine(`Ship missed another ship!`);
     });
@@ -142,7 +145,8 @@ export class GameComponent implements OnInit, OnDestroy {
   private ready() {
     this.writeLine("Waitting...");
     this.gameService.ready().then(res => {
-      if (res) this.writeLine("You are ready!");
+      if (res === 2) {}
+      else if (res === 1) this.writeLine("You are ready!");
       else this.writeLine("Can be you did not add ships!");
     });
   }

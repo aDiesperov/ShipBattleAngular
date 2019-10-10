@@ -64,7 +64,7 @@ export class GameService {
     return null;
   }
 
-  async ready(): Promise<boolean> {
+  async ready(): Promise<number> {
     return await this.signalRService.Connection.invoke("ready");
   }
 
