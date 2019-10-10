@@ -13,17 +13,19 @@ export class LoginPartialComponent implements DoCheck {
     this.name = this.loginService.Name;
   }
 
-  public name : string | null;
+  public name : string;
 
   constructor(private loginService: LoginService, private router: Router) { }
 
   OnLogout(){
     this.loginService.Logout();
     this.router.navigateByUrl('/login');
+    return false;
   }
 
   OnLogin(){
     this.router.navigateByUrl('/login');
+    return false;
   }
 
 }

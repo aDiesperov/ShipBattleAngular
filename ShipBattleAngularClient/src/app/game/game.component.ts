@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { SignalRService } from "../shared/signal-r.service";
 import { GameService } from "../shared/game.service";
 import { ShipModel } from "../models/ship.model";
@@ -10,7 +10,12 @@ import { CanvasGameField } from 'src/assets/graphic-framework/CanvasGameField';
   templateUrl: "./game.component.html",
   styleUrls: ["./game.component.css"]
 })
-export class GameComponent implements OnInit {
+export class GameComponent implements OnInit, OnDestroy {
+
+  async ngOnDestroy(): Promise<void> {
+    await this.signalRService.Stop();
+  }
+  
   _canvasCtx: CanvasRenderingContext2D;
   _widthCanvas: number;
   _heightCanvas: number;
@@ -26,12 +31,14 @@ export class GameComponent implements OnInit {
     private signalRService: SignalRService,
     private gameService: GameService
   ) {
-    this.signalRService.connection.on("ReceiveMessage", this.receiveMessage.bind(this));
-    this.signalRService.connection.on("PrepareGame", this.prepareGame.bind(this));
-    this.signalRService.connection.on("Hit", this.hit.bind(this));
-    this.signalRService.connection.on("Fix", this.fixed.bind(this));
-    this.signalRService.connection.on("Offer", this.offer.bind(this));
-    this.signalRService.connection.on("NextStep", this.myNextStep.bind(this));
+    this.signalRService.Connection.on("ReceiveMessage", this.receiveMessage.bind(this));
+    this.signalRService.Connection.on("PrepareGame", this.prepareGame.bind(this));
+    this.signalRService.Connection.on("Hit", this.hit.bind(this));
+    this.signalRService.Connection.on("Fix", this.fixed.bind(this));
+    this.signalRService.Connection.on("Offer", this.offer.bind(this));
+    this.signalRService.Connection.on("NextStep", this.myNextStep.bind(this));
+
+    this.signalRService.Start().then(() => console.log('connected!'));
   }
 
   inputText = "";

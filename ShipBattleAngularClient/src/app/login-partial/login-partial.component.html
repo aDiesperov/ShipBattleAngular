@@ -1,11 +1,11 @@
 <form asp-page="/Login/Logout" method="post" class="navbar-right">
     <ul class="nav navbar-nav navbar-right">
         <li>
-            <span *ngIf="name !== null" class="btn">You: {{name}}</span>
+            <span *ngIf="name !== ''" class="btn">You: {{name}}</span>
         </li>
         <li>
-            <a *ngIf="name !== null" (click)="OnLogout()" class="btn btn-link navbar-btn navbar-link">Logout</a>
-            <a *ngIf="name === null" (click)="OnLogin()"  class="btn btn-link navbar-btn navbar-link">Login</a>
+            <a href="#" *ngIf="name !== ''" (click)="OnLogout()" class="btn btn-link navbar-btn navbar-link">Logout</a>
+            <a href="#" *ngIf="name === ''" (click)="OnLogin()"  class="btn btn-link navbar-btn navbar-link">Login</a>
         </li>
     </ul>
 </form>

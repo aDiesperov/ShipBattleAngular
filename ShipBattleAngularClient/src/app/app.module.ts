@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
 import { GameComponent } from './game/game.component';
 import { LoginPartialComponent } from './login-partial/login-partial.component';
+import {CookieService } from 'ngx-cookie-service'
 
 @NgModule({
   declarations: [
@@ -20,7 +21,7 @@ import { LoginPartialComponent } from './login-partial/login-partial.component';
     AppRoutingModule,
     FormsModule
   ],
-  providers: [],
+  providers: [CookieService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

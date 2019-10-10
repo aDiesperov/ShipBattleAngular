@@ -1,4 +1,5 @@
 import { Injectable } from "@angular/core";
+import { CookieService } from 'ngx-cookie-service';
 
 @Injectable({
   providedIn: "root"
@@ -7,24 +8,23 @@ export class LoginService {
   
   private readonly _loginName = "name";
 
-  constructor() {}
+  constructor(private cookieService: CookieService) {}
 
   Login(name: string): boolean {
     if(this.IsAuthenticated) return false;
-    localStorage.setItem(this._loginName, name);
+    this.cookieService.set(this._loginName, name);
     return true;
   }
 
   Logout(): void {
-    localStorage.removeItem(this._loginName);
+    this.cookieService.delete(this._loginName);
   }
 
   get IsAuthenticated(): boolean {
-    if (localStorage.getItem(this._loginName) !== null) return true;
-    return false;
+    return this.cookieService.check(this._loginName);
   }
 
-  get Name(): string | null {
-    return localStorage.getItem(this._loginName);
+  get Name(): string {
+    return this.cookieService.get(this._loginName);
   }
 }

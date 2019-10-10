@@ -30,11 +30,11 @@ export class GameService {
 
   async start(cmd: string): Promise<boolean> {
     let user = cmd.substring(cmd.indexOf(" ") + 1);
-    return await this.signalRService.connection.invoke("start", user);
+    return await this.signalRService.Connection.invoke("start", user);
   }
 
   async nextStep(): Promise<boolean> {
-    return await this.signalRService.connection.invoke("nextStep");
+    return await this.signalRService.Connection.invoke("nextStep");
   }
 
   async addship(cmd: string): Promise<ShipModel | null> {
@@ -53,7 +53,7 @@ export class GameService {
         +match[9]
       );
 
-      let res = await this.signalRService.connection.invoke("addship", ship);
+      let res = await this.signalRService.Connection.invoke("addship", ship);
 
       if (res) {
         this.ships.push(ship);
@@ -65,7 +65,7 @@ export class GameService {
   }
 
   async ready(): Promise<boolean> {
-    return await this.signalRService.connection.invoke("ready");
+    return await this.signalRService.Connection.invoke("ready");
   }
 
   async move(cmd: string): Promise<InfoAct | null> {
@@ -73,7 +73,7 @@ export class GameService {
     let match = regex.exec(cmd);
     if (match !== null) {
       let infoMove = new InfoAct(+match[1], +match[2], +match[3]);
-      let res = await this.signalRService.connection.invoke("move", infoMove);
+      let res = await this.signalRService.Connection.invoke("move", infoMove);
 
       if (res) {
         this.ships[infoMove.Num].X = infoMove.X;
@@ -90,7 +90,7 @@ export class GameService {
     let match = regex.exec(cmd);
     if (match !== null) {
       let infoShot = new InfoAct(+match[1], +match[2], +match[3]);
-      return await this.signalRService.connection.invoke("shot", infoShot);
+      return await this.signalRService.Connection.invoke("shot", infoShot);
     }
     return 0;
   }
@@ -101,7 +101,7 @@ export class GameService {
     if (match !== null) {
       let infoFix = new InfoAct(+match[1], +match[2], +match[3]);
 
-      let res = await this.signalRService.connection.invoke("fix", infoFix);
+      let res = await this.signalRService.Connection.invoke("fix", infoFix);
 
       if (res) return infoFix;
       return null;

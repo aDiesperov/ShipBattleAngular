@@ -32,7 +32,7 @@ namespace ShipBattleAngularApi.Web.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            string user = Context.GetHttpContext().Request.Query["access_token"];
+            string user = Context.GetHttpContext().Request.Cookies["name"];
             if (!String.IsNullOrEmpty(user))
             {
                 string pathBase = Context.GetHttpContext().Request.Host.Value;
