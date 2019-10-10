@@ -56,22 +56,19 @@ namespace ShipBattleAngularApi.Web.Hubs
 
         public async Task<bool> Start(string enemy)
         {
-            string user = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
-            if (!String.IsNullOrEmpty(user))
+            var userInfo = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
+            if (userInfo != null && userInfo.State < StateReadyGame.Prepare)
             {
-                var userInfo = _infoGameService[user];
-
-                if (userInfo.State > StateReadyGame.Offer) return false;
-
-                if (await _httpClientService.Start(user, enemy))
+                if (await _httpClientService.Start(_infoGameService.GetName(userInfo), enemy))
                 {
                     userInfo.Enemy = enemy;
 
                     //parallel change state
-                    if (userInfo.State > StateReadyGame.Offer) return false;
-
-                    userInfo.State = StateReadyGame.Offer;
-                    return true;
+                    if (userInfo.State < StateReadyGame.Prepare)
+                    {
+                        userInfo.State = StateReadyGame.Offer;
+                        return true;
+                    }
                 }
             }
             return false;
@@ -79,9 +76,10 @@ namespace ShipBattleAngularApi.Web.Hubs
 
         public async Task Left()
         {
-            string user = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
-            if (!String.IsNullOrEmpty(user))
+            var userInfo = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
+            if (userInfo != null)
             {
+                string user = _infoGameService.GetName(userInfo);
                 await _httpClientService.Left(user);
                 _infoGameService.Remove(user);
             }
@@ -89,35 +87,32 @@ namespace ShipBattleAngularApi.Web.Hubs
 
         public bool AddShip(ShipInfo shipInfo)
         {
-            string user = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
-            if (!String.IsNullOrEmpty(user) && _infoGameService[user].State == StateReadyGame.Prepare)
+            var userInfo = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
+            if (userInfo != null && userInfo.State == StateReadyGame.Prepare)
             {
-                if (shipInfo.TypeShip == TypeShips.Military)
+                ShipModel ship;
+
+                switch (shipInfo.TypeShip)
                 {
-                    if (shipInfo.Act2 != 0) return false;
+                    case TypeShips.Military:
+                        if (shipInfo.Act2 != 0) return false;
 
-                    MilitaryShipModel ship = new MilitaryShipModel(shipInfo.Len, shipInfo.Speed, shipInfo.R_act, shipInfo.Act1);
+                        ship = new MilitaryShipModel(shipInfo.Len, shipInfo.Speed, shipInfo.R_act, shipInfo.Act1);
 
-                    if (_infoGameService[user].GameField.AddShip(ship, shipInfo.X, shipInfo.Y, shipInfo.Dir))
-                        return true;
+                        if (userInfo.GameField.AddShip(ship, shipInfo.X, shipInfo.Y, shipInfo.Dir)) return true;
+                        break;
+                    case TypeShips.Support:
+                        if (shipInfo.Act2 != 0) return false;
 
-                }
-                else if (shipInfo.TypeShip == TypeShips.Support)
-                {
-                    if (shipInfo.Act2 != 0) return false;
+                        ship = new SupportShipModel(shipInfo.Len, shipInfo.Speed, shipInfo.R_act, shipInfo.Act1);
 
-                    SupportShipModel ship = new SupportShipModel(shipInfo.Len, shipInfo.Speed, shipInfo.R_act, shipInfo.Act1);
-
-                    if (_infoGameService[user].GameField.AddShip(ship, shipInfo.X, shipInfo.Y, shipInfo.Dir))
-                        return true;
-
-                }
-                else if (shipInfo.TypeShip == TypeShips.Hybrid)
-                {
-                    HybridShipModel ship = new HybridShipModel(shipInfo.Len, shipInfo.Speed, shipInfo.R_act, shipInfo.Act1, shipInfo.Act2);
-
-                    if (_infoGameService[user].GameField.AddShip(ship, shipInfo.X, shipInfo.Y, shipInfo.Dir))
-                        return true;
+                        if (userInfo.GameField.AddShip(ship, shipInfo.X, shipInfo.Y, shipInfo.Dir)) return true;
+                        break;
+                    case TypeShips.Hybrid:
+                        ship = new HybridShipModel(shipInfo.Len, shipInfo.Speed, shipInfo.R_act, shipInfo.Act1, shipInfo.Act2);
+                        
+                        if (userInfo.GameField.AddShip(ship, shipInfo.X, shipInfo.Y, shipInfo.Dir)) return true;
+                        break;
                 }
             }
             return false;
@@ -125,10 +120,12 @@ namespace ShipBattleAngularApi.Web.Hubs
 
         public async Task<bool> Ready()
         {
-            string user = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
-            if (!String.IsNullOrEmpty(user) && _infoGameService.ShipsExist(user))
+            var userInfo = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
+            if (userInfo != null && userInfo.State == StateReadyGame.Prepare && _infoGameService.ShipsExist(userInfo))
             {
-                foreach (CoorModel coor in _infoGameService.GetCoors(user))
+                string user = _infoGameService.GetName(userInfo);
+
+                foreach (CoorModel coor in userInfo.GameField.Coors)
                 {
                     CoorViewModel coorViewModel = coor.MapToCoorViewModel();
                     string infoShip = Serializer.Serialize(coorViewModel);
@@ -144,6 +141,24 @@ namespace ShipBattleAngularApi.Web.Hubs
                 }
                 if (await _httpClientService.Ready(user))
                 {
+                    if (userInfo.State < StateReadyGame.Ready)
+                        userInfo.State = StateReadyGame.Ready;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public async Task<bool> NextStep()
+        {
+            var userInfo = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
+            if (userInfo != null && userInfo.State == StateReadyGame.Started && userInfo.MyQueue)
+            {
+                string user = _infoGameService.GetName(userInfo);
+
+                if (await _httpClientService.NextStep(user))
+                {
+                    userInfo.MyQueue = false;
                     return true;
                 }
             }
@@ -152,12 +167,12 @@ namespace ShipBattleAngularApi.Web.Hubs
 
         public async Task<bool> Move(InfoAct infoMove)
         {
-            string user = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
-            if (!String.IsNullOrEmpty(user) && _infoGameService[user].State == StateReadyGame.Started)
+            var userInfo = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
+            if (userInfo != null && userInfo.State == StateReadyGame.Started)
             {
-                if(await _httpClientService.Move(user, infoMove.Num, infoMove.X, infoMove.Y))
+                if (await _httpClientService.Move(_infoGameService.GetName(userInfo), infoMove.Num, infoMove.X, infoMove.Y))
                 {
-                    _gameService.Move(user, infoMove.Num, infoMove.X, infoMove.Y);
+                    _gameService.Move(userInfo, infoMove.Num, infoMove.X, infoMove.Y);
                     return true;
                 }
             }
@@ -166,28 +181,26 @@ namespace ShipBattleAngularApi.Web.Hubs
 
         public async Task<StateShot> Shot(InfoAct infoShot)
         {
-            string user = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
-            if (!String.IsNullOrEmpty(user) && _infoGameService[user].State == StateReadyGame.Started)
+            var userInfo = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
+            if (userInfo != null && userInfo.State == StateReadyGame.Started)
             {
-                var res = await _httpClientService.Shot(user, infoShot.Num, infoShot.X, infoShot.Y);
+                var res = await _httpClientService.Shot(_infoGameService.GetName(userInfo), infoShot.Num, infoShot.X, infoShot.Y);
 
                 //Save shot's res to local
 
                 return res;
-                
+
             }
             return StateShot.Miss;
         }
 
         public async Task<bool> Fix(InfoAct infoFix)
         {
-            string user = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
-            if (!String.IsNullOrEmpty(user) && _infoGameService[user].State == StateReadyGame.Started)
+            var userInfo = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
+            if (userInfo != null && userInfo.State == StateReadyGame.Started)
             {
-                if(await _httpClientService.Fix(user, infoFix.Num, infoFix.X, infoFix.Y))
-                {
+                if (await _httpClientService.Fix(_infoGameService.GetName(userInfo), infoFix.Num, infoFix.X, infoFix.Y))
                     return true;
-                }
             }
             return false;
         }

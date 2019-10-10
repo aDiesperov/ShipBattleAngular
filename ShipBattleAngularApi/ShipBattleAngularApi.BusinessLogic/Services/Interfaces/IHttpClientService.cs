@@ -13,5 +13,6 @@ namespace ShipBattleAngularApi.BusinessLogic.Services.Interfaces
         Task<bool> Move(string user, int num, int x, int y);
         Task<StateShot> Shot(string user, int num, int x, int y);
         Task<bool> Fix(string user, int num, int x, int y);
+        Task<bool> NextStep(string user);
     }
 }

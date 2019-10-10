@@ -22,6 +22,7 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
         private readonly string _clientMethodMove = "move";
         private readonly string _clientMethodShot = "shot";
         private readonly string _clientMethodFix = "fix";
+        private readonly string _clientMethodNextStep = "nextStep";
 
         private readonly AppSettings _opt;
         private readonly HttpClient _httpClient;
@@ -52,7 +53,7 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
         {
             string url = createUrl(_opt.AddressApi, _clientController, _clientMethodJoin, user, pathBase);
 
-            return await handlerResponceBool(await _httpClient.GetAsync(url));
+            return await handlerResponseBool(await _httpClient.GetAsync(url));
         }
 
         public async Task Left(string user)
@@ -67,17 +68,17 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
         {
             string url = createUrl(_opt.AddressApi, _clientController, _clientMethodReady, user);
 
-            return await handlerResponceBool(await _httpClient.GetAsync(url));
+            return await handlerResponseBool(await _httpClient.GetAsync(url));
         }
 
         public async Task<bool> Start(string user, string enemy)
         {
             string url = createUrl(_opt.AddressApi, _clientController, _clientMethodStart, user, enemy);
 
-            return await handlerResponceBool(await _httpClient.GetAsync(url));
+            return await handlerResponseBool(await _httpClient.GetAsync(url));
         }
 
-        private async Task<bool> handlerResponceBool(HttpResponseMessage httpResponse)
+        private async Task<bool> handlerResponseBool(HttpResponseMessage httpResponse)
         {
             if (httpResponse.IsSuccessStatusCode)
             {
@@ -104,7 +105,7 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
             string content = JsonConvert.SerializeObject(new { num, x, y });
 
             HttpContent httpContent = new StringContent(content, Encoding.UTF8, _mediaType);
-            return await handlerResponceBool(await _httpClient.PostAsync(url, httpContent));
+            return await handlerResponseBool(await _httpClient.PostAsync(url, httpContent));
         }
 
         public async Task<StateShot> Shot(string user, int num, int x, int y)
@@ -129,7 +130,14 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
             string content = JsonConvert.SerializeObject(new { num, x, y });
 
             HttpContent httpContent = new StringContent(content, Encoding.UTF8, _mediaType);
-            return await handlerResponceBool(await _httpClient.PostAsync(url, httpContent));
+            return await handlerResponseBool(await _httpClient.PostAsync(url, httpContent));
+        }
+
+        public async Task<bool> NextStep(string user)
+        {
+            string url = createUrl(_opt.AddressApi, _clientController, _clientMethodNextStep, user);
+
+            return await handlerResponseBool(await _httpClient.GetAsync(url));
         }
     }
 }

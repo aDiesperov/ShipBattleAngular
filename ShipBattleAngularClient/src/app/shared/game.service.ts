@@ -7,7 +7,7 @@ import { InfoAct } from "../models/infoAct.model";
   providedIn: "root"
 })
 export class GameService {
-
+  
   fixed(num: number, broken: number) {
     let ship = this.ships[num];
     ship.Broken = broken;
@@ -31,6 +31,10 @@ export class GameService {
   async start(cmd: string): Promise<boolean> {
     let user = cmd.substring(cmd.indexOf(" ") + 1);
     return await this.signalRService.connection.invoke("start", user);
+  }
+
+  async nextStep(): Promise<boolean> {
+    return await this.signalRService.connection.invoke("nextStep");
   }
 
   async addship(cmd: string): Promise<ShipModel | null> {

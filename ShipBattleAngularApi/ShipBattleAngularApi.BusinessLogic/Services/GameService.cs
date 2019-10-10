@@ -1,4 +1,5 @@
-﻿using ShipBattleAngularApi.BusinessLogic.Services.Interfaces;
+﻿using ShipBattleAngularApi.BusinessLogic.Models;
+using ShipBattleAngularApi.BusinessLogic.Services.Interfaces;
 using ShipBattleApi.Models.Enums;
 using ShipBattleApi.Models.Models;
 
@@ -13,19 +14,14 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
             _infoGameService = infoGameService;
         }
 
-        public void FixShip(string user, int numShip, int broken)
+        public void FixShip(InfoGame userInfo, int numShip, int broken)
         {
-            var userInfo = _infoGameService[user];
-            if (userInfo != null)
-            {
-                ShipModel ship = userInfo.GameField.Coors[numShip].Ship;
-                if (ship != null) ship.Broken = broken;
-            }
+            ShipModel ship = userInfo.GameField.Coors[numShip].Ship;
+            if (ship != null) ship.Broken = broken;
         }
 
-        public void HitShip(string user, int numShoted, double damage, bool died)
+        public void HitShip(InfoGame userInfo, int numShoted, double damage, bool died)
         {
-            var userInfo = _infoGameService[user];
             if (userInfo != null)
             {
                 ShipModel ship = userInfo.GameField.Coors[numShoted].Ship;
@@ -38,55 +34,28 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
             }
         }
 
-        public bool Move(string user, int num, int x, int y)
+        public void Move(InfoGame userInfo, int num, int x, int y)
         {
-            if (_infoGameService.Exists(user))
-            {
-                var gameField = _infoGameService.GetField(user);
-                var coor = gameField.Coors[num];
+            var gameField = userInfo.GameField;
+            var coor = gameField.Coors[num];
 
-                coor.X = x;
-                coor.Y = y;
-
-                return true;
-            }
-            return false;
+            coor.X = x;
+            coor.Y = y;
         }
 
-        public bool PrepareGame(string user, GameFieldModel gameFieldModel, bool myQueue)
+        public void PrepareGame(InfoGame userInfo, GameFieldModel gameFieldModel, bool myQueue)
         {
-            if (_infoGameService.Exists(user))
-            {
-                _infoGameService[user].State = StateReadyGame.Prepare;
-                _infoGameService[user].GameField = gameFieldModel;
-                _infoGameService[user].MyQueue = myQueue;
-                return true;
-            }
-            return false;
+            userInfo.State = StateReadyGame.Prepare;
+            userInfo.GameField = gameFieldModel;
+            userInfo.MyQueue = myQueue;
         }
 
-        public void ResetGame(string user)
+        public void ResetGame(InfoGame userInfo)
         {
-            if (_infoGameService.Exists(user))
-            {
-                var userInfo = _infoGameService[user];
-
-                userInfo.GameField = null;
-                userInfo.Enemy = null;
-                userInfo.MyQueue = false;
-                userInfo.State = StateReadyGame.None;
-            }
-        }
-
-        public bool StartedGame(string user)
-        {
-            if (_infoGameService.Exists(user))
-            {
-                var userInfo = _infoGameService[user];
-                userInfo.State = StateReadyGame.Started;
-                return true;
-            }
-            return false;
+            userInfo.GameField = null;
+            userInfo.Enemy = null;
+            userInfo.MyQueue = false;
+            userInfo.State = StateReadyGame.None;
         }
     }
 }

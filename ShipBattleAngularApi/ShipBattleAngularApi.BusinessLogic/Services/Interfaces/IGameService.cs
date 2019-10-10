@@ -1,14 +1,14 @@
-﻿using ShipBattleApi.Models.Models;
+﻿using ShipBattleAngularApi.BusinessLogic.Models;
+using ShipBattleApi.Models.Models;
 
 namespace ShipBattleAngularApi.BusinessLogic.Services.Interfaces
 {
     public interface IGameService
     {
-        bool PrepareGame(string user, GameFieldModel gameFieldModel, bool myQueue);
-        bool StartedGame(string user);
-        void ResetGame(string user);
-        void HitShip(string user, int id, double damage, bool died);
-        bool Move(string user, int num, int x, int y);
-        void FixShip(string user, int numShip, int broken);
+        void PrepareGame(InfoGame user, GameFieldModel gameFieldModel, bool myQueue);
+        void ResetGame(InfoGame user);
+        void HitShip(InfoGame user, int id, double damage, bool died);
+        void Move(InfoGame user, int num, int x, int y);
+        void FixShip(InfoGame user, int numShip, int broken);
     }
 }

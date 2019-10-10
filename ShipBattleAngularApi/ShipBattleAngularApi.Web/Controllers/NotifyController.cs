@@ -7,6 +7,7 @@ using ShipBattleAngularApi.Web.Extensions;
 using ShipBattleAngularApi.Web.Hubs;
 using ShipBattleAngularApi.Web.Hubs.Interfaces;
 using ShipBattleAngularApi.Web.Models;
+using ShipBattleApi.Models.Enums;
 using ShipBattleApi.Models.Models;
 
 namespace ShipBattleAngularApi.Web.Controllers
@@ -46,43 +47,35 @@ namespace ShipBattleAngularApi.Web.Controllers
         [HttpPost("send/{user}")]
         public async Task SendAsync([FromRoute]string user, [FromBody]string msg)
         {
-            if (String.IsNullOrEmpty(user) || String.IsNullOrEmpty(msg)) return;
-
-            if (_infoGameService.Exists(user))
-            {
-                string conId = _infoGameService.GetConnectionId(user);
-                await _hubContext.Clients.Client(conId).ReceiveMessage(msg, false);
-            }
+            var userInfo = _infoGameService[user];
+            if (userInfo != null && !String.IsNullOrEmpty(msg))
+                await _hubContext.Clients.Client(userInfo.ConnectionId).ReceiveMessage(msg, false);
         }
 
-        [HttpPost("prepareGame/{user}/{enemy}")]
-        public async Task PrepareGameAsync([FromRoute]string user, [FromRoute]string enemy, [FromBody]InfoGameFieldViewModel infoGameField)
+        [HttpPost("prepareGame/{user}")]
+        public async Task PrepareGameAsync([FromRoute]string user, [FromBody]InfoGameFieldViewModel infoGameField)
         {
-            if (_infoGameService.Exists(user))
+            var userInfo = _infoGameService[user];
+            if (userInfo != null)
             {
-
                 GameFieldViewModel gameFieldViewModel = Serializer.Deserialize<GameFieldViewModel>(infoGameField.FieldGame);
                 GameFieldModel gameFieldModel = gameFieldViewModel.MapToGameFieldModel();
 
-                if (_gameService.PrepareGame(user, gameFieldModel, infoGameField.MyQueue))
-                {
-                    int idField = gameFieldViewModel.Id;
-                    string conId = _infoGameService.GetConnectionId(user);
+                _gameService.PrepareGame(userInfo, gameFieldModel, infoGameField.MyQueue);
 
-                    await _hubContext.Clients.Client(conId).PrepareGame(idField, enemy);
-                }
+                await _hubContext.Clients.Client(userInfo.ConnectionId).PrepareGame(gameFieldViewModel.Id);
             }
         }
 
         [HttpHead("startedGame/{user}")]
         public async Task StartedGameAsync([FromRoute]string user)
         {
-            if (String.IsNullOrEmpty(user)) return;
-
-            if (_gameService.StartedGame(user))
+            var userInfo = _infoGameService[user];
+            if (userInfo != null)
             {
+                userInfo.State = StateReadyGame.Started;
                 await SendAsync(user, _messageStartGame);
-                if (_infoGameService[user].MyQueue)
+                if (userInfo.MyQueue)
                 {
                     await SendAsync(user, _messageYourTurn);
                 }
@@ -95,21 +88,13 @@ namespace ShipBattleAngularApi.Web.Controllers
             var userInfo = _infoGameService[user];
             if (userInfo != null)
             {
-                _gameService.ResetGame(user);
-
-                string conId = _infoGameService.GetConnectionId(user);
+                _gameService.ResetGame(userInfo);
 
                 string msg = _messageGameFinished;
-                if (win)
-                {
-                    msg += "\n" + _messageWinGame;
-                }
-                else
-                {
-                    msg += "\n" + _messageFailGame;
-                }
+                if (win) msg += "\n" + _messageWinGame;
+                else msg += "\n" + _messageFailGame;
 
-                await _hubContext.Clients.Client(conId).ReceiveMessage(msg, false);
+                await _hubContext.Clients.Client(userInfo.ConnectionId).ReceiveMessage(msg, false);
             }
         }
 
@@ -119,15 +104,13 @@ namespace ShipBattleAngularApi.Web.Controllers
             var userInfo = _infoGameService[user];
             if (userInfo != null)
             {
-                _gameService.HitShip(user, infoHit.NumShoted, infoHit.DamageShoted, infoHit.DiedShip);
+                _gameService.HitShip(userInfo, infoHit.NumShoted, infoHit.DamageShoted, infoHit.DiedShip);
 
                 string msg;
-                if (infoHit.DiedShip)  msg = _messageDiedShip;
+                if (infoHit.DiedShip) msg = _messageDiedShip;
                 else msg = _messageHitShip;
 
-                string conId = _infoGameService.GetConnectionId(user);
-
-                await _hubContext.Clients.Client(conId).Hit(msg, infoHit.NumShoted, infoHit.DamageShoted, infoHit.DiedShip);
+                await _hubContext.Clients.Client(userInfo.ConnectionId).Hit(msg, infoHit.NumShoted, infoHit.DamageShoted, infoHit.DiedShip);
             }
         }
 
@@ -137,11 +120,30 @@ namespace ShipBattleAngularApi.Web.Controllers
             var userInfo = _infoGameService[user];
             if (userInfo != null)
             {
-                _gameService.FixShip(user, infoFix.NumShip, infoFix.Broken);
+                _gameService.FixShip(userInfo, infoFix.NumShip, infoFix.Broken);
 
-                string conId = _infoGameService.GetConnectionId(user);
+                await _hubContext.Clients.Client(userInfo.ConnectionId).Fix(infoFix.NumShip, infoFix.Broken);
+            }
+        }
 
-                await _hubContext.Clients.Client(conId).Fix(infoFix.NumShip, infoFix.Broken);
+        [HttpHead("offer/{user}/{enemy}")]
+        public async Task Offer([FromRoute]string user, [FromRoute]string enemy)
+        {
+            var userInfo = _infoGameService[user];
+            if (userInfo != null)
+            {
+                await _hubContext.Clients.Client(userInfo.ConnectionId).Offer(enemy);
+            }
+        }
+
+        [HttpHead("nextStep/{user}")]
+        public async Task NextStep([FromRoute]string user)
+        {
+            var userInfo = _infoGameService[user];
+            if (userInfo != null)
+            {
+                userInfo.MyQueue = true;
+                await _hubContext.Clients.Client(userInfo.ConnectionId).NextStep();
             }
         }
     }

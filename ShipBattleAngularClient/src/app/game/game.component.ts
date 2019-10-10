@@ -30,18 +30,20 @@ export class GameComponent implements OnInit {
     this.signalRService.connection.on("PrepareGame", this.prepareGame.bind(this));
     this.signalRService.connection.on("Hit", this.hit.bind(this));
     this.signalRService.connection.on("Fix", this.fixed.bind(this));
+    this.signalRService.connection.on("Offer", this.offer.bind(this));
+    this.signalRService.connection.on("NextStep", this.myNextStep.bind(this));
   }
 
   inputText = "";
   inputCmd = "";
   disabledCmd = false;
 
-  fixed(num: number, broken: number){
+  fixed(num: number, broken: number) {
     this.gameService.fixed(num, broken);
     this.drawShips();
   }
 
-  hit(msg: string, num: number, damage: number, died: boolean){
+  hit(msg: string, num: number, damage: number, died: boolean) {
     this.writeLine(msg);
     this.gameService.hit(num, damage, died);
     this.drawShips();
@@ -58,6 +60,14 @@ export class GameComponent implements OnInit {
     this.writeLine(
       `You are playing with ${enemy}. GameFieldId is ${id}. Add ships on your field!`
     );
+  }
+
+  offer(name: string) {
+    this.writeLine(`User ${name} want to play with you!`);
+  }
+
+  myNextStep() {
+    this.writeLine(`Your turn!`);
   }
 
   writeLine(text: string) {
@@ -86,6 +96,8 @@ export class GameComponent implements OnInit {
         this.shot(cmd);
       } else if (cmd.startsWith("fix")) {
         this.fix(cmd);
+      }else if (cmd.startsWith('nextStep')) {
+        this.nextStep();
       }
     }
   }
@@ -135,6 +147,15 @@ export class GameComponent implements OnInit {
         this.drawShips();
       } else this.writeLine("Error!");
     });
+  }
+
+  private nextStep() {
+    this.writeLine('Waitting...');
+    this.gameService.nextStep().then(
+      (res: boolean) => {
+        if (!res) this.writeLine('error!');
+      }
+    );
   }
 
   drawShips() {

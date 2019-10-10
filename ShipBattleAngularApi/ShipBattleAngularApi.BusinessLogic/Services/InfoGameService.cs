@@ -1,6 +1,7 @@
 ﻿using ShipBattleAngularApi.BusinessLogic.Models;
 using ShipBattleAngularApi.BusinessLogic.Services.Interfaces;
 using ShipBattleApi.Models.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,37 +9,41 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
 {
     public class InfoGameService : IInfoGameService
     {
-        private Dictionary<string, InfoGame> _userInfoGame;
+        private class ExtendedInfoGame : InfoGame
+        {
+            public ExtendedInfoGame(string connectionId)
+            {
+                ConnectionId = connectionId;
+            }
+            public KeyValuePair<string, ExtendedInfoGame> Self { get; set; }
+        }
+
+        private Dictionary<string, ExtendedInfoGame> _userInfoGame;
 
         public InfoGameService()
         {
-            _userInfoGame = new Dictionary<string, InfoGame>();
+            _userInfoGame = new Dictionary<string, ExtendedInfoGame>();
         }
 
         public bool Add(string user, string connectionId)
         {
             if (Exists(user)) return false;
 
-            _userInfoGame.Add(user, new InfoGame(connectionId));
+            _userInfoGame.Add(user, new ExtendedInfoGame(connectionId));
+            _userInfoGame.Last().Value.Self = _userInfoGame.Last();
 
             return true;
         }
 
-        public bool Exists(string user) => _userInfoGame.ContainsKey(user);
-
-        public IEnumerable<string> AllConnections
+        public bool Exists(string user)
         {
-            get => _userInfoGame.Values.Select(ig => ig.ConnectionId).Distinct();
+            if (String.IsNullOrEmpty(user)) return false;
+            return _userInfoGame.ContainsKey(user);
         }
 
         public InfoGame this[string name]
         {
-            get
-            {
-                if (Exists(name))
-                    return _userInfoGame[name];
-                return null;
-            }
+            get => Exists(name) ? _userInfoGame[name] : null;
         }
 
         public void Remove(string user)
@@ -46,42 +51,10 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
             if (Exists(user)) _userInfoGame.Remove(user);
         }
 
-        public string GetUserByConnectionId(string connectionId) =>_userInfoGame.SingleOrDefault(kvp => kvp.Value.ConnectionId == connectionId).Key;
+        public InfoGame GetUserByConnectionId(string connectionId) => _userInfoGame.SingleOrDefault(kvp => kvp.Value.ConnectionId == connectionId).Value;
 
-        public bool ShipsExist(string user)
-        {
-            if (Exists(user))
-            {
-                return _userInfoGame[user].GameField.Coors.Any();
-            }
-            return false;
-        }
+        public bool ShipsExist(InfoGame userInfo) => userInfo.GameField.Coors.Any();
 
-        public IEnumerable<CoorModel> GetCoors(string user)
-        {
-            if (Exists(user))
-            {
-                return _userInfoGame[user].GameField.Coors;
-            }
-            return new List<CoorModel>();
-        }
-
-        public string GetConnectionId(string user)
-        {
-            if (Exists(user))
-            {
-                return _userInfoGame[user].ConnectionId;
-            }
-            return null;
-        }
-
-        public GameFieldModel GetField(string user)
-        {
-            if (Exists(user))
-            {
-                return _userInfoGame[user].GameField;
-            }
-            return null;
-        }
+        public string GetName(InfoGame infoGame) => ((ExtendedInfoGame)infoGame).Self.Key;
     }
 }

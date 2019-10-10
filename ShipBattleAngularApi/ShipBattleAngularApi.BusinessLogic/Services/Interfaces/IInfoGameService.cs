@@ -8,15 +8,10 @@ namespace ShipBattleAngularApi.BusinessLogic.Services.Interfaces
     {
         bool Exists(string user);
         bool Add(string user, string connectionId);
-        IEnumerable<string> AllConnections { get; }
         void Remove(string user);
         InfoGame this[string name] { get; }
-        string GetUserByConnectionId(string connectionId);
-        bool ShipsExist(string user);
-        IEnumerable<CoorModel> GetCoors(string user);
-        string GetConnectionId(string user);
-        GameFieldModel GetField(string user);
-
-
+        InfoGame GetUserByConnectionId(string connectionId);
+        bool ShipsExist(InfoGame user);
+        string GetName(InfoGame infoGame);
     }
 }

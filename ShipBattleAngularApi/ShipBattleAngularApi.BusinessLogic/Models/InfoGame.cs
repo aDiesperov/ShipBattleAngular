@@ -3,12 +3,8 @@ using ShipBattleApi.Models.Models;
 
 namespace ShipBattleAngularApi.BusinessLogic.Models
 {
-    public class InfoGame
+    public abstract class InfoGame
     {
-        public InfoGame(string connectionId)
-        {
-            ConnectionId = connectionId;
-        }
         public string ConnectionId { get; set; }
         public string Enemy { get; set; }
         public GameFieldModel GameField { get; set; }
