@@ -118,7 +118,7 @@ namespace ShipBattleAngularApi.Web.Hubs
             return false;
         }
 
-        public async Task<int> Ready()
+        public async Task<StateReadyGame> Ready()
         {
             var userInfo = _infoGameService.GetUserByConnectionId(Context.ConnectionId);
             if (userInfo != null && userInfo.State == StateReadyGame.Prepare && _infoGameService.ShipsExist(userInfo))
@@ -139,13 +139,13 @@ namespace ShipBattleAngularApi.Web.Hubs
                     coor.Ship.Id = coorViewModel.Ship.Id;
                 }
 
-                int res = await _httpClientService.Ready(user);
-                if (res == 1)
+                StateReadyGame res = await _httpClientService.Ready(user);
+                if (res == StateReadyGame.Prepare)
                     userInfo.State = StateReadyGame.Ready;
 
                 return res;
             }
-            return 0;
+            return StateReadyGame.None;
         }
 
         public async Task<bool> NextStep()

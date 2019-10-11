@@ -64,7 +64,7 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
             await _httpClient.SendAsync(httpRequest);
         }
 
-        public async Task<int> Ready(string user)
+        public async Task<StateReadyGame> Ready(string user)
         {
             string url = createUrl(_opt.AddressApi, _clientController, _clientMethodReady, user);
 
@@ -73,10 +73,10 @@ namespace ShipBattleAngularApi.BusinessLogic.Services
             if (httpResponse.IsSuccessStatusCode)
             {
                 var res = await httpResponse.Content.ReadAsStringAsync();
-                return Convert.ToInt32(res);
+                return (StateReadyGame)Convert.ToInt32(res);
 
             }
-            return 0;
+            return StateReadyGame.None;
         }
 
         public async Task<bool> Start(string user, string enemy)

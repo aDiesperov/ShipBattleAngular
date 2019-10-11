@@ -155,9 +155,9 @@ export class GameComponent implements OnInit, OnDestroy {
     this.writeLine("Waitting...");
     this.gameService.ready().then(res => {
       switch (res) {
-        case 2:
+        case 4:
           break;
-        case 1:
+        case 3:
             this.writeLine("You are ready!");
           break;
         default:
