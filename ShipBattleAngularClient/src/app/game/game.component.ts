@@ -15,7 +15,7 @@ export class GameComponent implements OnInit, OnDestroy {
   async ngOnDestroy(): Promise<void> {
     await this.signalRService.Stop();
   }
-  
+
   _canvasCtx: CanvasRenderingContext2D;
   _widthCanvas: number;
   _heightCanvas: number;
@@ -105,7 +105,7 @@ export class GameComponent implements OnInit, OnDestroy {
         this.shot(cmd);
       } else if (cmd.startsWith("fix")) {
         this.fix(cmd);
-      }else if (cmd.startsWith('nextStep')) {
+      } else if (cmd.startsWith('nextStep')) {
         this.nextStep();
       }
     }
@@ -126,10 +126,19 @@ export class GameComponent implements OnInit, OnDestroy {
 
   private shot(cmd: string) {
     this.gameService.shot(cmd).then((res: number) => {
-      if (res === 3) {}
-      else if (res == 2) this.writeLine(`Ship killed another ship!`);
-      else if (res == 1) this.writeLine(`Ship hitted another ship!`);
-      else this.writeLine(`Ship missed another ship!`);
+      switch (res) {
+        case 3:
+          break;
+        case 2:
+          this.writeLine(`Ship killed another ship!`);
+          break;
+        case 1:
+          this.writeLine(`Ship hitted another ship!`);
+          break;
+        default:
+          this.writeLine(`Ship missed another ship!`);
+          break;
+      }
     });
   }
 
@@ -145,9 +154,16 @@ export class GameComponent implements OnInit, OnDestroy {
   private ready() {
     this.writeLine("Waitting...");
     this.gameService.ready().then(res => {
-      if (res === 2) {}
-      else if (res === 1) this.writeLine("You are ready!");
-      else this.writeLine("Can be you did not add ships!");
+      switch (res) {
+        case 2:
+          break;
+        case 1:
+            this.writeLine("You are ready!");
+          break;
+        default:
+            this.writeLine("Can be you did not add ships!");
+          break;
+      }
     });
   }
 
